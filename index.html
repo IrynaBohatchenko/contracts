@@ -1,0 +1,107 @@
+<html>
+<head>
+	<title>ApiApp</title>
+	<script src="/scripts/web3.min.js"></script>
+</head>
+
+<body>
+	<div>
+		<div>Token Contract</div>
+		<br/>
+		<input id='address' placeholder='address'></input>
+		<p id='balance'></p>
+		<button id='balancebtn' onclick="showBalance()">Show Balance</button>
+		<br/>
+		<br/>
+		<input id='contractaddress' placeholder='contract address'></input>
+		<p id='totalSupply'></p>
+		<button id='totalbtn' onclick="showSupply()">Show Contract Total Supply</button>
+		<br/>
+		<div>
+			<br/>
+			<input id='mintTarget' placeholder='Mint To' ></input>
+			<input placeholder='Amount' id='amount'></input>
+			<button id="mintbtn" onclick="mint()">Mint</button>
+			<br/>
+		    <br/>
+		    <input id='fromMoveFund' placeholder='From' ></intput>
+			<input id='moveFundTo' placeholder='Move To' ></intput>
+			<input id='amountToMove' placeholder='Amount' ></intput>
+			<button id="movefundbtn" onclick="transferFrom()">Transfer</button>
+		    <br/>
+		    <br/>
+		    <div id='wait' ></div>
+		</div>
+		<br/>
+		<br/>
+		<div id='log'>
+		</div>
+	</div>
+
+
+	<script type="text/javascript">
+		var web3 = require('web3');
+		web3 = new Web3(new Web3.providers.HttpProvider('http://192.168.1.132:3000'));
+		console.log("Connected to Web3 Status: " + web3.isConnected());
+		if (web3.eth != undefined) {
+			console.log("Connected to Geth (Go Ethereum) HTTP-RPC server");
+		}
+
+
+		var myAccount = "0x32ac627f02ba65dbfa40d6d63d3e6a7bd66292a5";
+		//var myContract = "0x055340fc7c3Dfbb1A3886605c25E83E6B7fB93d8";
+		web3.personal.unlockAccount("0x32ac627f02ba65dbfa40d6d63d3e6a7bd66292a5", "Njgbyfv,ehznrj2009");
+
+
+		var contractspec = web3.eth.contract([{"constant":false,"inputs":[{"name":"newSellPrice","type":"uint256"},{"name":"newBuyPrice","type":"uint256"}],"name":"setPrices","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"sellPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"standard","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"mintedAmount","type":"uint256"}],"name":"mintToken","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"buyPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"buy","outputs":[],"payable":true,"type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"frozenAccount","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"},{"name":"_extraData","type":"bytes"}],"name":"approveAndCall","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"sell","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"freeze","type":"bool"}],"name":"freezeAccount","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"type":"function"},{"inputs":[{"name":"initialSupply","type":"uint256"},{"name":"tokenName","type":"string"},{"name":"decimalUnits","type":"uint8"},{"name":"tokenSymbol","type":"string"}],"payable":false,"type":"constructor"},{"payable":false,"type":"fallback"},{"anonymous":false,"inputs":[{"indexed":false,"name":"target","type":"address"},{"indexed":false,"name":"frozen","type":"bool"}],"name":"FrozenFunds","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"}]);
+		
+
+		
+		function showBalance () {
+			var balance = web3.eth.getBalance(document.getElementById('address').value);
+			console.log(balance.toString());
+		}
+		function showSupply () {
+			var contractInstance = contractspec.at(document.getElementById('contractaddress').value);
+
+			//var contractInstance = contractspec.at(myContract);
+			document.getElementById('totalSupply').innerHTML = contractInstance.totalSupply();
+		}
+		function mint () {
+		    var contractInstance = contractspec.at(document.getElementById('contractaddress').value);
+		    
+		    //var contractInstance = contractspec.at(myContract);
+		    var txHash = contractInstance.mintToken(
+		    	/*document.getElementById('mintTarget'),
+		    	document.getElementById('amount'),*/
+		    	myAccount,
+		    	"333",
+		    	{
+		    		from: myAccount,
+		    		/*to: contract,*/
+		    		gas: '1000000',
+		    		gasPrice: '10'
+		    	}
+		    );
+		    console.log(txHash);
+		}
+		function transferFrom () {
+			var contractInstance = contractspec.at(document.getElementById('contractaddress').value);
+
+		    //var contractInstance = contractspec.at(myContract);
+			var txHash = contractInstance.transferFrom(
+		        document.getElementById('fromMoveFund'),
+		        document.getElementById('moveFundTo'),
+		        document.getElementById('amountToMove'),
+		    	{
+		    		from: myAccount,
+		    		/*to: contract,*/
+		    		gas: '100000',
+		    		gasPrice: '10'
+		    	}
+		    );
+		    console.log(txHash);
+		}		
+	</script>
+</body>
+</html>
